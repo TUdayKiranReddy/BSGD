@@ -1,0 +1,1 @@
+# Batch Stochastic Gradient Descent
