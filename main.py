@@ -96,12 +96,12 @@ approx = 1
 mu_noise = 0
 batch_size = 128
 deltas = np.linspace(0.05, 0.2, 11)
-phi = 1e-2*torch.ones(size=(1, 100)).to(device)
+phi = 1e-2*torch.ones(size=(1, N)).to(device)
 ###############################
 # Approximate 
-ITR_LIM = 100
+ITR_LIM = 1000
 
-nMC = 1
+nMC = 5
 scheduler = True
 
 seeds = 69 + np.arange(nMC)
@@ -126,8 +126,8 @@ for j in range(nMC):
     values_gd_approx += np.array(Values_gd_approx)
     values_gd_approx_noisy += np.array(Values_gd_approx_noisy)
 
-values_gd_approx /= nMC; time_gd_approx /= nMC*deltas.shape[0]
-values_gd_approx_noisy /= nMC; time_gd_approx_noisy /= nMC*deltas.shape[0]
+values_gd_approx /= nMC
+values_gd_approx_noisy /= nMC
 
 plot_var_delta(values_gd_approx, values_gd_approx_noisy, deltas, title=r"BSGD varying $\rho$", snr=snr_approx, savepath="./plots/varying_rho_{}.jpeg".format(snr_approx))
 
@@ -155,13 +155,13 @@ phi = 1e-1*torch.ones(size=(1, N)).to(device)
 snr = 10
 
 x_gd_approx, values_gd_approx,\
-params_c_gd_approx, params_eps_gd_approx = simulate(f, GD, is_require_coords=True, approx=approx, 
+params_c_gd_approx, params_eps_gd_approx = simulate(f, f, GD, is_require_coords=True, approx=approx, 
                                                     mu_noise=mu_noise, snr=snr, batch_size=batch_size, 
                                                     scheduler=False, ITR_LIM=ITR_LIM, step=step, seed=seed, 
                                                     load_phi=load_phi, return_params=return_params, 
                                                     tau=tau, phi=phi, p=p, q=q, is_BCD=is_BCD, delta=delta, c=c)
 x_gd_approx_blum, values_gd_approx_blum,\
-params_c_gd_approx_blum, params_eps_gd_approx_blum = simulate(f, GD, is_require_coords=True, 
+params_c_gd_approx_blum, params_eps_gd_approx_blum = simulate(f, f, GD, is_require_coords=True, 
                                                               approx=approx, mu_noise=mu_noise, snr=snr, 
                                                               batch_size=batch_size, scheduler=True, 
                                                               ITR_LIM=ITR_LIM, step=step, seed=seed, 
@@ -172,13 +172,13 @@ params_c_gd_approx_blum, params_eps_gd_approx_blum = simulate(f, GD, is_require_
 snr = 20
 
 x_gd_approx, values_gd_approx_noisy,\
-params_c_gd_approx, params_eps_gd_approx = simulate(f, GD, is_require_coords=True, approx=approx, 
+params_c_gd_approx, params_eps_gd_approx = simulate(f, f, GD, is_require_coords=True, approx=approx, 
                                                     mu_noise=mu_noise, snr=snr, batch_size=batch_size, 
                                                     scheduler=False, ITR_LIM=ITR_LIM, step=step, seed=seed, 
                                                     load_phi=load_phi, return_params=return_params, 
                                                     tau=tau, phi=phi, p=p, q=q, is_BCD=is_BCD, delta=delta, c=c)
 x_gd_approx_blum, values_gd_approx_blum_noisy,\
-params_c_gd_approx_blum, params_eps_gd_approx_blum = simulate(f, GD, is_require_coords=True, 
+params_c_gd_approx_blum, params_eps_gd_approx_blum = simulate(f, f, GD, is_require_coords=True, 
                                                               approx=approx, mu_noise=mu_noise, snr=snr, 
                                                               batch_size=batch_size, scheduler=True, 
                                                               ITR_LIM=ITR_LIM, step=step, seed=seed, 
