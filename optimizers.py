@@ -2,8 +2,8 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 from utils import *
+from config import *
 
-device = "cpu"
 
 class GD():
     def __init__(self, snr=np.inf, approx=1, mu_noise=0, delta=1, device="cpu", batch_size=1, seed=None):

@@ -2,8 +2,7 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-
-device = "cpu"
+from config import *
 
 def first_order_approx(f, phi, i, batch_size=64, eps=1e-6, snr=10, mu=0, device="cpu"):
     n = phi.shape[0]
