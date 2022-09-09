@@ -82,6 +82,16 @@ approx = 1
 mu_noise = 0
 batch_size = 128
 deltas = np.linspace(0.05, 0.2, 11)
+N = 100
+A = torch.Tensor(np.load('data_files/A_10.npy')).to(device)
+
+def f(x, A=A, device="cpu"):
+    y = x@A@x.T
+    return torch.diag(y)
+
+def df(x, A=A, device=device):
+    return (2*x@A).to(device)
+
 phi = 1e-2*torch.ones(size=(1, N)).to(device)
 ###############################
 # Approximate 
@@ -120,7 +130,7 @@ plot_var_delta(values_gd_approx, values_gd_approx_noisy, deltas, title=r"BSGD va
 
 ##################################################################################
 #################### Constant vs Blum ###########################
-
+from config import *
 ################ Config #############
 approx = 1
 mu_noise = 0
@@ -171,21 +181,20 @@ params_c_gd_approx_blum, params_eps_gd_approx_blum = simulate(f, f, GD, is_requi
                                                               load_phi=load_phi, return_params=return_params, 
                                                               tau=tau, phi=phi, p=p, q=q, is_BCD=is_BCD, delta=delta, c=c)
 
-ylims = [6e-1, 2e0]
 
 plt.figure(figsize=(12, 8))
 plt.title(r"Constant step size vs Blum's condition, $\rho$ = 0.2", fontsize=25)
 
-plt.semilogy(values_gd_approx_noisy, label="Constant Step Size at SNR = 10 dB")
-plt.semilogy(values_gd_approx, label="Constant Step Size at SNR = 20 dB")
-plt.semilogy(values_gd_approx_blum_noisy, label="Blum's conditions at SNR = 10 dB")
-plt.semilogy(values_gd_approx_blum, label="Blum's conditions at SNR = 20 dB")
+plt.loglog(values_gd_approx_noisy, label="Constant Step Size at SNR = 10 dB")
+plt.loglog(values_gd_approx, label="Constant Step Size at SNR = 20 dB")
+plt.loglog(values_gd_approx_blum_noisy, label="Blum's conditions at SNR = 10 dB")
+plt.loglog(values_gd_approx_blum, label="Blum's conditions at SNR = 20 dB")
 plt.xlabel(r't', fontsize=20)
 plt.ylabel(r'$|J({\boldsymbol {\theta}_t}) - J({\boldsymbol {\theta}^*})|$', fontsize=20)
-plt.ylim(ylims)
 plt.xticks(fontsize=14);
 plt.yticks(fontsize=14);
 
 plt.legend(loc='upper right', bbox_to_anchor=(1.06, -0.08),
           fancybox=True, shadow=True, ncol=2, fontsize=20)
 plt.savefig('./plots/constant_v_blum_together.jpg', bbox_inches='tight')
+
