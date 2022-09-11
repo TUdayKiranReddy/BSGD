@@ -15,7 +15,7 @@ from config import *
 ############## BATCH COORDINATE DESCENT #################
 #########################################################
 ## NOISELESS APPROX GRADIENTS CONFIGURATION
-
+'''
 snr = np.inf
 approx = 1
 mu_noise = 0
@@ -75,13 +75,14 @@ plt.legend(loc='upper right', bbox_to_anchor=(0.85, -0.08),
           fancybox=True, shadow=True, ncol=5, fontsize=25)
 
 plt.savefig('./plots/asynchronous_comparisions_all_{}dB.jpg'.format(snr_approx), bbox_inches='tight')
-
+'''
 ########################################################################################
 ######################## BSGD varying \rho #####################
 approx = 1
 mu_noise = 0
 batch_size = 128
 deltas = np.linspace(0.05, 0.2, 11)
+'''
 N = 100
 A = torch.Tensor(np.load('data_files/A_10.npy')).to(device)
 
@@ -91,16 +92,16 @@ def f(x, A=A, device="cpu"):
 
 def df(x, A=A, device=device):
     return (2*x@A).to(device)
-
+'''
 phi = 1e-2*torch.ones(size=(1, N)).to(device)
 ###############################
 # Approximate 
 ITR_LIM = 1000
 
-nMC = 5
+nMC = 10
 scheduler = True
 
-seeds = 69 + np.arange(nMC)
+seeds = 60 + np.arange(nMC)
 ################################
 values_gd_approx = 0
 values_gd_approx_noisy = 0
@@ -127,7 +128,7 @@ values_gd_approx_noisy /= nMC
 
 plot_var_delta(values_gd_approx, values_gd_approx_noisy, deltas, title=r"BSGD varying $\rho$", snr=snr_approx, savepath="./plots/varying_rho_{}.jpeg".format(snr_approx))
 
-
+'''
 ##################################################################################
 #################### Constant vs Blum ###########################
 from config import *
@@ -197,4 +198,4 @@ plt.yticks(fontsize=14);
 plt.legend(loc='upper right', bbox_to_anchor=(1.06, -0.08),
           fancybox=True, shadow=True, ncol=2, fontsize=20)
 plt.savefig('./plots/constant_v_blum_together.jpg', bbox_inches='tight')
-
+'''
