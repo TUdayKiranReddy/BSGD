@@ -82,19 +82,19 @@ def get_weight_matrix(W, layers):
     mats = []
     j = 0
     for l in layers:
-        mats.append(torch.reshape(W[j:(j+int(prod_list(l)))], l))
+        mats.append(torch.reshape(W[0, j:(j+int(prod_list(l)))], l))
     return mats
 
 def init_weights(layers, seed=69, device="cpu"):
     torch.manual_seed(seed)
 
-    W = torch.zeros((get_nparams(layers), 1)).to(device)
+    W = torch.zeros((1, get_nparams(layers))).to(device)
     j = 0
     for l in layers:
         w = torch.zeros(l)
         torch.nn.init.xavier_normal_(w)
         j_ = j + prod_list(l)
-        W[j:j_] = torch.reshape(w, (-1, 1))
+        W[0, j:j_] = torch.reshape(w, (1, -1))
         j = j_
     return W
 

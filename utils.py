@@ -72,11 +72,14 @@ def gradient(df, phi, i=None, approx=None, snr=np.inf, mu=0, c=1e-6, batch_size=
     
     return grad
 
-def simulate(grad, f, GD, approx=1, mu_noise=0, snr=np.inf, is_BCD=False, delta=0.5, is_require_coords=False, batch_size=1, scheduler=True, ITR_LIM=1000, step=1, seed=None, load_phi=False, return_params=False, tau=2e2, phi=None, p=1, q=0.02, c=None, N=1000):
+def simulate(grad, f, GD, approx=1, mu_noise=0, snr=np.inf, is_BCD=False, delta=0.5, is_require_coords=False, batch_size=1, scheduler=True, ITR_LIM=1000, step=1, seed=None, load_phi=False, return_params=False, tau=2e2, phi=None, p=1, q=0.02, c=None, N=1000, isDNN=False):
     if load_phi:
         phi = torch.Tensor(np.load('./data_files/phi_2.npy').reshape(1, -1)).to(device)
     elif phi is None:
         phi = 1e-3*torch.ones(size=(1, N)).to(device)
+
+    if isDNN:
+        phi = init_weights(layers)
     
     opt = GD(snr=snr, approx=approx, mu_noise=mu_noise, device=device, batch_size=batch_size, seed=seed)
     if c is not None:
@@ -99,7 +102,7 @@ def simulate(grad, f, GD, approx=1, mu_noise=0, snr=np.inf, is_BCD=False, delta=
     opt.start(phi)
     
     values_0 = [f(opt.phi, device=device).cpu().numpy()]
-    print("Initial Value: {} Optimal Value: {}".format(values_0[0][0], 0))
+    print("Initial Value: {} Optimal Value: {} #Params: {}".format(values_0[0], 0, phi.shape[0]))
     params_c = []
     params_eps = []
     if is_require_coords:

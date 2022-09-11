@@ -15,19 +15,20 @@ from config import *
 ############## BATCH COORDINATE DESCENT #################
 #########################################################
 ## NOISELESS APPROX GRADIENTS CONFIGURATION
-'''
+
 snr = np.inf
 approx = 1
 mu_noise = 0
 batch_size = 512
 delta = 0.2
 seed = 69
+isDNN = True
 #######################################################
 
-values_gd_approx = simulate(f, f, GD, approx=approx, mu_noise=mu_noise, snr=snr, batch_size=batch_size, is_BCD=True, delta=delta, seed=seed)
-values_nag_approx = simulate(f, f, NAG, approx=approx, mu_noise=mu_noise, snr=snr, batch_size=batch_size, is_BCD=True, delta=delta, seed=seed)
-values_nag_suts_approx = simulate(f, f, NAG_sutskever, approx=approx, mu_noise=mu_noise, snr=snr, batch_size=batch_size, is_BCD=True, delta=delta, seed=seed)
-values_nag_ben_approx = simulate(f, f, NAG_bengio, approx=approx, mu_noise=mu_noise, snr=snr, batch_size=batch_size, is_BCD=True, delta=delta, seed=seed)
+values_gd_approx = simulate(f, f, GD, approx=approx, mu_noise=mu_noise, snr=snr, batch_size=batch_size, is_BCD=True, delta=delta, seed=seed, isDNN=isDNN)
+values_nag_approx = simulate(f, f, NAG, approx=approx, mu_noise=mu_noise, snr=snr, batch_size=batch_size, is_BCD=True, delta=delta, seed=seed, isDNN=isDNN)
+values_nag_suts_approx = simulate(f, f, NAG_sutskever, approx=approx, mu_noise=mu_noise, snr=snr, batch_size=batch_size, is_BCD=True, delta=delta, seed=seed, isDNN=isDNN)
+values_nag_ben_approx = simulate(f, f, NAG_bengio, approx=approx, mu_noise=mu_noise, snr=snr, batch_size=batch_size, is_BCD=True, delta=delta, seed=seed, isDNN=isDNN)
 ######################################################
 
 ## 50dB-NOISY APPROX GRADIENTS CONFIGURATION
@@ -39,10 +40,10 @@ batch_size = 512
 seed = 70
 #####################################################
 
-values_gd_approx_noisy = simulate(f, f, GD, approx=approx, mu_noise=mu_noise, snr=snr_approx, batch_size=batch_size, is_BCD=True, delta=delta, seed=seed)
-values_nag_approx_noisy = simulate(f, f, NAG, approx=approx, mu_noise=mu_noise, snr=snr_approx, batch_size=batch_size, is_BCD=True, delta=delta, seed=seed)
-values_nag_suts_approx_noisy = simulate(f, f, NAG_sutskever, approx=approx, mu_noise=mu_noise, snr=snr_approx, batch_size=batch_size, is_BCD=True, delta=delta, seed=seed)
-values_nag_ben_approx_noisy = simulate(f, f, NAG_bengio, approx=approx, mu_noise=mu_noise, snr=snr_approx, batch_size=batch_size, is_BCD=True, delta=delta, seed=seed)
+values_gd_approx_noisy = simulate(f, f, GD, approx=approx, mu_noise=mu_noise, snr=snr_approx, batch_size=batch_size, is_BCD=True, delta=delta, seed=seed, isDNN=isDNN)
+values_nag_approx_noisy = simulate(f, f, NAG, approx=approx, mu_noise=mu_noise, snr=snr_approx, batch_size=batch_size, is_BCD=True, delta=delta, seed=seed, isDNN=isDNN)
+values_nag_suts_approx_noisy = simulate(f, f, NAG_sutskever, approx=approx, mu_noise=mu_noise, snr=snr_approx, batch_size=batch_size, is_BCD=True, delta=delta, seed=seed, isDNN=isDNN)
+values_nag_ben_approx_noisy = simulate(f, f, NAG_bengio, approx=approx, mu_noise=mu_noise, snr=snr_approx, batch_size=batch_size, is_BCD=True, delta=delta, seed=seed, isDNN=isDNN)
 
 #### PLOTTING #################################################
 plt.figure(figsize=(20, 10))
@@ -75,14 +76,16 @@ plt.legend(loc='upper right', bbox_to_anchor=(0.85, -0.08),
           fancybox=True, shadow=True, ncol=5, fontsize=25)
 
 plt.savefig('./plots/asynchronous_comparisions_all_{}dB.jpg'.format(snr_approx), bbox_inches='tight')
-'''
+
+
 ########################################################################################
 ######################## BSGD varying \rho #####################
+'''
 approx = 1
 mu_noise = 0
 batch_size = 128
 deltas = np.linspace(0.05, 0.2, 11)
-'''
+
 N = 100
 A = torch.Tensor(np.load('data_files/A_10.npy')).to(device)
 
@@ -92,7 +95,7 @@ def f(x, A=A, device="cpu"):
 
 def df(x, A=A, device=device):
     return (2*x@A).to(device)
-'''
+
 phi = 1e-2*torch.ones(size=(1, N)).to(device)
 ###############################
 # Approximate 
@@ -128,7 +131,7 @@ values_gd_approx_noisy /= nMC
 
 plot_var_delta(values_gd_approx, values_gd_approx_noisy, deltas, title=r"BSGD varying $\rho$", snr=snr_approx, savepath="./plots/varying_rho_{}.jpeg".format(snr_approx))
 
-'''
+
 ##################################################################################
 #################### Constant vs Blum ###########################
 from config import *
