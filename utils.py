@@ -79,7 +79,7 @@ def simulate(grad, f, GD, approx=1, mu_noise=0, snr=np.inf, is_BCD=False, delta=
         phi = 1e-3*torch.ones(size=(1, N)).to(device)
 
     if isDNN:
-        phi = init_weights(layers)
+        phi = init_weights(layers).to(device)
     
     opt = GD(snr=snr, approx=approx, mu_noise=mu_noise, device=device, batch_size=batch_size, seed=seed)
     if c is not None:

@@ -16,7 +16,7 @@ batch_size = None
 '''
 ## QUADRACTIC FORM
 
-def f(x, A=A, device=device):
+def f(x, A=A, device="cpu"):
     y = x@A@x.T
     return torch.diag(y)
 
@@ -63,6 +63,7 @@ def get_nparams(layers):
 def mlp(X, W, layers=None, bias=False, activations=None):
     mats = get_weight_matrix(W, layers)
     if bias:
+        print(X)
         x = torch.cat([X, torch.ones((X.shape[0], 1)).to(device)], dim=1)
     else:
         x = X
@@ -87,7 +88,7 @@ def get_weight_matrix(W, layers):
         mats.append(torch.reshape(W[0, j:(j+int(prod_list(l)))], l))
     return mats
 
-def init_weights(layers, seed=69, device=device):
+def init_weights(layers, seed=69, device="cpu"):
     torch.manual_seed(seed)
 
     W = torch.zeros((1, get_nparams(layers))).to(device)
@@ -101,7 +102,7 @@ def init_weights(layers, seed=69, device=device):
     return W
 
 
-def f(W, batch_size=batch_size, regression=True, device=device):
+def f(W, batch_size=batch_size, regression=True, device="cpu"):
     X, Y = datasets.load_breast_cancer(return_X_y=True)
     if not regression:
         nClasses = np.unique(Y).shape[0]
