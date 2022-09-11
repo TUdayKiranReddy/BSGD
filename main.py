@@ -23,12 +23,13 @@ batch_size = 512
 delta = 0.2
 seed = 69
 isDNN = True
+is_BCD = False
 #######################################################
 
-values_gd_approx = simulate(f, f, GD, approx=approx, mu_noise=mu_noise, snr=snr, batch_size=batch_size, is_BCD=True, delta=delta, seed=seed, isDNN=isDNN)
-values_nag_approx = simulate(f, f, NAG, approx=approx, mu_noise=mu_noise, snr=snr, batch_size=batch_size, is_BCD=True, delta=delta, seed=seed, isDNN=isDNN)
-values_nag_suts_approx = simulate(f, f, NAG_sutskever, approx=approx, mu_noise=mu_noise, snr=snr, batch_size=batch_size, is_BCD=True, delta=delta, seed=seed, isDNN=isDNN)
-values_nag_ben_approx = simulate(f, f, NAG_bengio, approx=approx, mu_noise=mu_noise, snr=snr, batch_size=batch_size, is_BCD=True, delta=delta, seed=seed, isDNN=isDNN)
+values_gd_approx = simulate(f, f, GD, approx=approx, mu_noise=mu_noise, snr=snr, batch_size=batch_size, is_BCD=is_BCD, delta=delta, seed=seed, isDNN=isDNN)
+values_nag_approx = simulate(f, f, NAG, approx=approx, mu_noise=mu_noise, snr=snr, batch_size=batch_size, is_BCD=is_BCD, delta=delta, seed=seed, isDNN=isDNN)
+values_nag_suts_approx = simulate(f, f, NAG_sutskever, approx=approx, mu_noise=mu_noise, snr=snr, batch_size=batch_size, is_BCD=is_BCD, delta=delta, seed=seed, isDNN=isDNN)
+values_nag_ben_approx = simulate(f, f, NAG_bengio, approx=approx, mu_noise=mu_noise, snr=snr, batch_size=batch_size, is_BCD=is_BCD, delta=delta, seed=seed, isDNN=isDNN)
 ######################################################
 
 ## 50dB-NOISY APPROX GRADIENTS CONFIGURATION
@@ -40,10 +41,10 @@ batch_size = 512
 seed = 70
 #####################################################
 
-values_gd_approx_noisy = simulate(f, f, GD, approx=approx, mu_noise=mu_noise, snr=snr_approx, batch_size=batch_size, is_BCD=True, delta=delta, seed=seed, isDNN=isDNN)
-values_nag_approx_noisy = simulate(f, f, NAG, approx=approx, mu_noise=mu_noise, snr=snr_approx, batch_size=batch_size, is_BCD=True, delta=delta, seed=seed, isDNN=isDNN)
-values_nag_suts_approx_noisy = simulate(f, f, NAG_sutskever, approx=approx, mu_noise=mu_noise, snr=snr_approx, batch_size=batch_size, is_BCD=True, delta=delta, seed=seed, isDNN=isDNN)
-values_nag_ben_approx_noisy = simulate(f, f, NAG_bengio, approx=approx, mu_noise=mu_noise, snr=snr_approx, batch_size=batch_size, is_BCD=True, delta=delta, seed=seed, isDNN=isDNN)
+values_gd_approx_noisy = simulate(f, f, GD, approx=approx, mu_noise=mu_noise, snr=snr_approx, batch_size=batch_size, is_BCD=is_BCD, delta=delta, seed=seed, isDNN=isDNN)
+values_nag_approx_noisy = simulate(f, f, NAG, approx=approx, mu_noise=mu_noise, snr=snr_approx, batch_size=batch_size, is_BCD=is_BCD, delta=delta, seed=seed, isDNN=isDNN)
+values_nag_suts_approx_noisy = simulate(f, f, NAG_sutskever, approx=approx, mu_noise=mu_noise, snr=snr_approx, batch_size=batch_size, is_BCD=is_BCD, delta=delta, seed=seed, isDNN=isDNN)
+values_nag_ben_approx_noisy = simulate(f, f, NAG_bengio, approx=approx, mu_noise=mu_noise, snr=snr_approx, batch_size=batch_size, is_BCD=is_BCD, delta=delta, seed=seed, isDNN=isDNN)
 
 #### PLOTTING #################################################
 plt.figure(figsize=(20, 10))

@@ -4,12 +4,12 @@ from sklearn import datasets
 
 ######################################O###################
 
-device = "cuda:3"
+device = "cpu"
 A = torch.Tensor(np.load('data_files/A.npy')).to(device)
 N = A.shape[0]
 
 layers = [(31, 2)]
-batch_size = None
+batch_size = 256 
 #########################################################
 ## DEFINE COST FUNCTION WITH IT'S DERIVATIVE
 
@@ -106,11 +106,11 @@ def f(W, batch_size=batch_size, regression=False, device="cpu"):
     if not regression:
         nClasses = np.unique(Y).shape[0]
 
-    if batch_size is None:
+    if batch_size is not None:
         idxs = np.arange(X.shape[0])
         np.random.shuffle(idxs)
         X = torch.Tensor(X[:batch_size, :]).to(device)
-        Y = torch.Tensor(X[:batch_size, :]).to(device)
+        Y = torch.Tensor(Y[:batch_size]).to(device)
     else:
         X = torch.Tensor(X).to(device)
         Y = torch.Tensor(Y).to(device)
