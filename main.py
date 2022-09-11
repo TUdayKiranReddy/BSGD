@@ -11,6 +11,13 @@ from utils import *
 from optimizers import *
 from config import *
 
+output_plots_dir = 'mlp_reg_plots'
+import os
+try:
+    os.mkdir('./'+output_plots_dir)
+except OSError as error:
+    print(output_plots_dir + " already exists!")
+
 #########################################################
 ############## BATCH COORDINATE DESCENT #################
 #########################################################
@@ -48,7 +55,7 @@ values_nag_ben_approx_noisy = simulate(f, f, NAG_bengio, approx=approx, mu_noise
 
 #### PLOTTING #################################################
 plt.figure(figsize=(20, 10))
-plt.suptitle(r"Comparing BSGD, $\rho$={}".format(0.2), fontsize=30)
+plt.suptitle(r"Comparing BSGD, $\rho$={}".format(delta), fontsize=30)
 
 plt.subplot(1,2,1)
 plt.title(r"Approx Gradients at SNR=$\infty$ dB", fontsize=25)
@@ -76,17 +83,16 @@ plt.yticks(fontsize=14);
 plt.legend(loc='upper right', bbox_to_anchor=(0.85, -0.08),
           fancybox=True, shadow=True, ncol=5, fontsize=25)
 
-plt.savefig('./plots/asynchronous_comparisions_all_{}dB.jpg'.format(snr_approx), bbox_inches='tight')
-
+plt.savefig('./'+output_plots_dir+'/asynchronous_comparisions_all_{}dB.jpg'.format(snr_approx), bbox_inches='tight')
 
 ########################################################################################
 ######################## BSGD varying \rho #####################
-'''
+
 approx = 1
 mu_noise = 0
 batch_size = 128
 deltas = np.linspace(0.05, 0.2, 11)
-
+'''
 N = 100
 A = torch.Tensor(np.load('data_files/A_10.npy')).to(device)
 
@@ -96,13 +102,16 @@ def f(x, A=A, device="cpu"):
 
 def df(x, A=A, device=device):
     return (2*x@A).to(device)
+'''
+
 
 phi = 1e-2*torch.ones(size=(1, N)).to(device)
+
 ###############################
-# Approximate 
+# Approximate
 ITR_LIM = 1000
 
-nMC = 10
+nMC = 1
 scheduler = True
 
 seeds = 60 + np.arange(nMC)
@@ -119,23 +128,22 @@ for j in range(nMC):
         # Exact
         snr = np.inf
         Values_gd_approx.append(simulate(f, f, GD, approx=approx, mu_noise=mu_noise, snr=snr, batch_size=batch_size, is_BCD=True, delta=delta, scheduler=scheduler, seed=seeds[j], ITR_LIM=ITR_LIM, load_phi=False, phi=phi))
-        
+
         # Approximate Noisy
         snr_approx = 50
         Values_gd_approx_noisy.append(simulate(f, f, GD, approx=approx, mu_noise=mu_noise, snr=snr_approx, batch_size=batch_size, is_BCD=True, delta=delta, scheduler=scheduler, seed=seeds[j], ITR_LIM=ITR_LIM, load_phi=False, phi=phi))
- 
+
     values_gd_approx += np.array(Values_gd_approx)
     values_gd_approx_noisy += np.array(Values_gd_approx_noisy)
 
 values_gd_approx /= nMC
 values_gd_approx_noisy /= nMC
 
-plot_var_delta(values_gd_approx, values_gd_approx_noisy, deltas, title=r"BSGD varying $\rho$", snr=snr_approx, savepath="./plots/varying_rho_{}.jpeg".format(snr_approx))
-
+plot_var_delta(values_gd_approx, values_gd_approx_noisy, deltas, title=r"BSGD varying $\rho$", snr=snr_approx, savepath="./"+output_plots_dir+"/varying_rho_{}.jpeg".format(snr_approx))
 
 ##################################################################################
 #################### Constant vs Blum ###########################
-from config import *
+# from config import *
 ################ Config #############
 approx = 1
 mu_noise = 0
@@ -156,44 +164,44 @@ phi = 1e-1*torch.ones(size=(1, N)).to(device)
 snr = 10
 
 x_gd_approx, values_gd_approx,\
-params_c_gd_approx, params_eps_gd_approx = simulate(f, f, GD, is_require_coords=True, approx=approx, 
-                                                    mu_noise=mu_noise, snr=snr, batch_size=batch_size, 
-                                                    scheduler=False, ITR_LIM=ITR_LIM, step=step, seed=seed, 
-                                                    load_phi=load_phi, return_params=return_params, 
+params_c_gd_approx, params_eps_gd_approx = simulate(f, f, GD, is_require_coords=True, approx=approx,
+                                                    mu_noise=mu_noise, snr=snr, batch_size=batch_size,
+                                                    scheduler=False, ITR_LIM=ITR_LIM, step=step, seed=seed,
+                                                    load_phi=load_phi, return_params=return_params,
                                                     tau=tau, phi=phi, p=p, q=q, is_BCD=is_BCD, delta=delta, c=c)
 x_gd_approx_blum, values_gd_approx_blum,\
-params_c_gd_approx_blum, params_eps_gd_approx_blum = simulate(f, f, GD, is_require_coords=True, 
-                                                              approx=approx, mu_noise=mu_noise, snr=snr, 
-                                                              batch_size=batch_size, scheduler=True, 
-                                                              ITR_LIM=ITR_LIM, step=step, seed=seed, 
-                                                              load_phi=load_phi, return_params=return_params, 
+params_c_gd_approx_blum, params_eps_gd_approx_blum = simulate(f, f, GD, is_require_coords=True,
+                                                              approx=approx, mu_noise=mu_noise, snr=snr,
+                                                              batch_size=batch_size, scheduler=True,
+                                                              ITR_LIM=ITR_LIM, step=step, seed=seed,
+                                                              load_phi=load_phi, return_params=return_params,
                                                               tau=tau, phi=phi, p=p, q=q, is_BCD=is_BCD, delta=delta, c=c)
 
 
 snr = 20
 
 x_gd_approx, values_gd_approx_noisy,\
-params_c_gd_approx, params_eps_gd_approx = simulate(f, f, GD, is_require_coords=True, approx=approx, 
-                                                    mu_noise=mu_noise, snr=snr, batch_size=batch_size, 
-                                                    scheduler=False, ITR_LIM=ITR_LIM, step=step, seed=seed, 
-                                                    load_phi=load_phi, return_params=return_params, 
+params_c_gd_approx, params_eps_gd_approx = simulate(f, f, GD, is_require_coords=True, approx=approx,
+                                                    mu_noise=mu_noise, snr=snr, batch_size=batch_size,
+                                                    scheduler=False, ITR_LIM=ITR_LIM, step=step, seed=seed,
+                                                    load_phi=load_phi, return_params=return_params,
                                                     tau=tau, phi=phi, p=p, q=q, is_BCD=is_BCD, delta=delta, c=c)
 x_gd_approx_blum, values_gd_approx_blum_noisy,\
-params_c_gd_approx_blum, params_eps_gd_approx_blum = simulate(f, f, GD, is_require_coords=True, 
-                                                              approx=approx, mu_noise=mu_noise, snr=snr, 
-                                                              batch_size=batch_size, scheduler=True, 
-                                                              ITR_LIM=ITR_LIM, step=step, seed=seed, 
-                                                              load_phi=load_phi, return_params=return_params, 
+params_c_gd_approx_blum, params_eps_gd_approx_blum = simulate(f, f, GD, is_require_coords=True,
+                                                              approx=approx, mu_noise=mu_noise, snr=snr,
+                                                              batch_size=batch_size, scheduler=True,
+                                                              ITR_LIM=ITR_LIM, step=step, seed=seed,
+                                                              load_phi=load_phi, return_params=return_params,
                                                               tau=tau, phi=phi, p=p, q=q, is_BCD=is_BCD, delta=delta, c=c)
 
 
 plt.figure(figsize=(12, 8))
 plt.title(r"Constant step size vs Blum's condition, $\rho$ = 0.2", fontsize=25)
 
-plt.loglog(values_gd_approx_noisy, label="Constant Step Size at SNR = 10 dB")
-plt.loglog(values_gd_approx, label="Constant Step Size at SNR = 20 dB")
-plt.loglog(values_gd_approx_blum_noisy, label="Blum's conditions at SNR = 10 dB")
-plt.loglog(values_gd_approx_blum, label="Blum's conditions at SNR = 20 dB")
+plt.semilogy(values_gd_approx_noisy, label="Constant Step Size at SNR = 10 dB")
+plt.semilogy(values_gd_approx, label="Constant Step Size at SNR = 20 dB")
+plt.semilogy(values_gd_approx_blum_noisy, label="Blum's conditions at SNR = 10 dB")
+plt.semilogy(values_gd_approx_blum, label="Blum's conditions at SNR = 20 dB")
 plt.xlabel(r't', fontsize=20)
 plt.ylabel(r'$|J({\boldsymbol {\theta}_t}) - J({\boldsymbol {\theta}^*})|$', fontsize=20)
 plt.xticks(fontsize=14);
@@ -201,5 +209,5 @@ plt.yticks(fontsize=14);
 
 plt.legend(loc='upper right', bbox_to_anchor=(1.06, -0.08),
           fancybox=True, shadow=True, ncol=2, fontsize=20)
-plt.savefig('./plots/constant_v_blum_together.jpg', bbox_inches='tight')
-'''
+plt.savefig('./'+output_plots_dir+'/constant_v_blum_together.jpg', bbox_inches='tight')
+

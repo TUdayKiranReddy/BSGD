@@ -4,12 +4,14 @@ from sklearn import datasets
 
 ######################################O###################
 
-device = "cuda:3"
+device = "cpu"
 A = torch.Tensor(np.load('data_files/A.npy')).to(device)
 N = A.shape[0]
 
-layers = [(31, 1)]
-batch_size = None 
+layers = [(11, 8), (8, 4), (4, 1)]
+regression = True
+regularization = True
+Batch_size = None
 #########################################################
 ## DEFINE COST FUNCTION WITH IT'S DERIVATIVE
 
@@ -40,7 +42,7 @@ def softmax(x, temp=1.0):
 
 def d_log_sum_exp(x, temp=1.0):
     return temp*softmax(x, temp=temp)
-    
+
 def f(x, A=A, temp=1.0, device=device):
     y = x@A@x.T + torch.logsumexp(temp*x, dim=1)
     return torch.diag(y) - 6.9052555215155556
@@ -83,8 +85,9 @@ def prod_list(l):
 def get_weight_matrix(W, layers):
     mats = []
     j = 0
+    bs = W.shape[0]
     for l in layers:
-        mats.append(torch.reshape(W[0, j:(j+int(prod_list(l)))], l))
+        mats.append(torch.reshape(W[:, j:(j+int(prod_list(l)))], ((bs, l[0], l[1]))))
     return mats
 
 def init_weights(layers, seed=69, device=device):
@@ -101,8 +104,13 @@ def init_weights(layers, seed=69, device=device):
     return W
 
 
-def f(W, batch_size=batch_size, regression=True, device=device):
-    X, Y = datasets.load_breast_cancer(return_X_y=True)
+def f(W, batch_size=Batch_size, regression=regression, regularization=regularization, beta=0.01, device=device):
+    if regression:
+        X, Y = datasets.load_diabetes(return_X_y=True)
+        #print(X.shape, Y.shape)
+    else:
+        X, Y = datasets.load_breast_cancer(return_X_y=True)
+
     if not regression:
         nClasses = np.unique(Y).shape[0]
 
@@ -118,13 +126,32 @@ def f(W, batch_size=batch_size, regression=True, device=device):
     Y_hat = None
     loss = None
     if regression:
-        Y_hat = mlp(X, W, layers=layers, bias=True, activations=[None])
+        Y_hat = mlp(X, W, layers=layers, bias=True, activations=[None]*len(layers))
+        #print(W.shape, Y_hat.shape)
         loss = torch.nn.MSELoss()
     else:
-        Y_hat = mlp(X, W, layers=layers, bias=True, activations=[None])
+        Y_hat = mlp(X, W, layers=layers, bias=True, activations=[None]*len(layers))
         loss = torch.nn.CrossEntropyLoss()
         Y = Y.type(torch.long)
-    return loss(Y_hat, Y)
+    if regularization:
+        if W.shape[0] == 1:
+            z = loss(torch.squeeze(Y_hat), Y) + beta*W@W.T
+        else:
+            z = torch.Tensor([loss(torch.squeeze(Y_hat[i]), Y) + beta*W[i]@W[i].T for i in range(W.shape[0])])
+    else:
+        if W.shape[0] == 1:
+            z = loss(torch.squeeze(Y_hat), Y)
+        else:
+            #print(Y_hat[0].shape, Y.shape)
+            z = torch.Tensor([loss(torch.squeeze(y_hat), Y) for y_hat in Y_hat])
+    if z.numel() == 1:
+        if z.ndim == 1:
+            return z[0]
+        elif z.ndim == 2:
+            return z[0, 0]
+        else:
+            return z
+    return z
 
 
 if __name__ == "__main__":
