@@ -99,7 +99,7 @@ def init_weights(layers, seed=69, device="cpu"):
     return W
 
 
-def f(W, batch_size=256, regression=False, device="cpu"):
+def f(W, batch_size=2, regression=False, device="cpu"):
     X, Y = datasets.load_breast_cancer(return_X_y=True)
     if not regression:
         nClasses = np.unique(Y).shape[0]
@@ -119,13 +119,14 @@ def f(W, batch_size=256, regression=False, device="cpu"):
         Y_hat = mlp(X, W, layers=[(M+1, 1)], bias=True, activations=[None])
         loss = torch.nn.MSELoss()
     else:
-        Y_hat = mlp(X, W, layers=[(M+1, nClasses)], bias=True, activations=[None])
+        Y_hat = mlp(X, W, layers=[(M+1, 16), (16, nClasses)], bias=True, activations=[None])
         loss = torch.nn.CrossEntropyLoss()
+        Y = Y.type(torch.long)
     return loss(Y_hat, Y)
 
 
 if __name__ == "__main__":
-    layers = [(31, 2)]
+    layers = [(31, 16), (16, 2)]
     W = init_weights(layers)
     print(f(W))
 
