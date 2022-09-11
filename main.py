@@ -11,12 +11,19 @@ from utils import *
 from optimizers import *
 from config import *
 
-output_plots_dir = 'mlp_reg_plots'
+output_plots_dir = 'quad_logsumexp_plots'
+saveData = True
 import os
 try:
     os.mkdir('./'+output_plots_dir)
 except OSError as error:
     print(output_plots_dir + " already exists!")
+
+if saveData:
+    try:
+        os.mkdir('./'+output_plots_dir+'/data_files')
+    except OSError as error:
+        print(output_plots_dir + " already exists!")
 
 #########################################################
 ############## BATCH COORDINATE DESCENT #################
@@ -41,7 +48,7 @@ values_nag_ben_approx = simulate(f, f, NAG_bengio, approx=approx, mu_noise=mu_no
 
 ## 50dB-NOISY APPROX GRADIENTS CONFIGURATION
 
-snr_approx = 50
+snr_approx = 10
 approx = 1
 mu_noise = 0
 batch_size = 512
@@ -85,6 +92,19 @@ plt.legend(loc='upper right', bbox_to_anchor=(0.85, -0.08),
 
 plt.savefig('./'+output_plots_dir+'/asynchronous_comparisions_all_{}dB.jpg'.format(snr_approx), bbox_inches='tight')
 
+
+if saveData:
+    np.save('./'+output_plots_dir+'/data_files' + '/values_gd_approx.npy', values_gd_approx)
+    np.save('./'+output_plots_dir+'/data_files' + '/values_nag_approx.npy', values_nag_approx)
+    np.save('./'+output_plots_dir+'/data_files' + '/values_nag_suts_approx.npy', values_nag_suts_approx)
+    np.save('./'+output_plots_dir+'/data_files' + '/values_nag_ben_approx.npy', values_nag_ben_approx)
+
+    np.save('./'+output_plots_dir+'/data_files' + '/values_gd_approx_noisy.npy', values_gd_approx_noisy)
+    np.save('./'+output_plots_dir+'/data_files' + '/values_nag_approx_noisy.npy', values_nag_approx_noisy)
+    np.save('./'+output_plots_dir+'/data_files' + '/values_nag_suts_approx_noisy.npy', values_nag_suts_approx_noisy)
+    np.save('./'+output_plots_dir+'/data_files' + '/values_nag_ben_approx_noisy.npy', values_nag_ben_approx_noisy)
+
+
 ########################################################################################
 ######################## BSGD varying \rho #####################
 
@@ -111,7 +131,7 @@ phi = 1e-2*torch.ones(size=(1, N)).to(device)
 # Approximate
 ITR_LIM = 1000
 
-nMC = 1
+nMC = 5
 scheduler = True
 
 seeds = 60 + np.arange(nMC)
@@ -141,6 +161,9 @@ values_gd_approx_noisy /= nMC
 
 plot_var_delta(values_gd_approx, values_gd_approx_noisy, deltas, title=r"BSGD varying $\rho$", snr=snr_approx, savepath="./"+output_plots_dir+"/varying_rho_{}.jpeg".format(snr_approx))
 
+if saveData:
+    np.save('./'+output_plots_dir+'/data_files' + '/Values_gd_approx.npy', values_gd_approx)
+    np.save('./'+output_plots_dir+'/data_files' + '/Values_gd_approx_noisy.npy', values_gd_approx_noisy)
 ##################################################################################
 #################### Constant vs Blum ###########################
 # from config import *
@@ -161,7 +184,7 @@ tau = 2e2
 
 phi = 1e-1*torch.ones(size=(1, N)).to(device)
 
-snr = 10
+snr = -10
 
 x_gd_approx, values_gd_approx,\
 params_c_gd_approx, params_eps_gd_approx = simulate(f, f, GD, is_require_coords=True, approx=approx,
@@ -178,7 +201,7 @@ params_c_gd_approx_blum, params_eps_gd_approx_blum = simulate(f, f, GD, is_requi
                                                               tau=tau, phi=phi, p=p, q=q, is_BCD=is_BCD, delta=delta, c=c)
 
 
-snr = 20
+snr = 0
 
 x_gd_approx, values_gd_approx_noisy,\
 params_c_gd_approx, params_eps_gd_approx = simulate(f, f, GD, is_require_coords=True, approx=approx,
@@ -211,3 +234,8 @@ plt.legend(loc='upper right', bbox_to_anchor=(1.06, -0.08),
           fancybox=True, shadow=True, ncol=2, fontsize=20)
 plt.savefig('./'+output_plots_dir+'/constant_v_blum_together.jpg', bbox_inches='tight')
 
+if saveData:
+    np.save('./'+output_plots_dir+'/data_files' + '/values_gd_approx.npy', values_gd_approx)
+    np.save('./'+output_plots_dir+'/data_files' + '/values_gd_approx_noisy.npy', values_gd_approx_noisy)
+    np.save('./'+output_plots_dir+'/data_files' + '/values_gd_approx_blum.npy', values_gd_approx_blum)
+    np.save('./'+output_plots_dir+'/data_files' + '/Values_gd_approx_blum_noisy.npy', values_gd_approx_blum_noisy)

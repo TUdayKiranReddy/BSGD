@@ -8,10 +8,14 @@ device = "cpu"
 A = torch.Tensor(np.load('data_files/A.npy')).to(device)
 N = A.shape[0]
 
-layers = [(11, 8), (8, 4), (4, 1)]
+layers = [(11, 1)]
 regression = True
 regularization = True
+beta = 0.1
 Batch_size = None
+
+opt_f = 0.0
+isDNN = False
 #########################################################
 ## DEFINE COST FUNCTION WITH IT'S DERIVATIVE
 
@@ -26,7 +30,7 @@ def df(x, A=A, device=device):
     return (2*x@A).to(device)
 '''
 
-'''
+
 ## LOGSUMEXP
 
 def log_sum_exp(x, temp=1.0):
@@ -103,8 +107,23 @@ def init_weights(layers, seed=69, device=device):
         j = j_
     return W
 
+def get_opt_reg(device=device):
+    X, Y = datasets.load_breast_cancer(return_X_y=True)
+    Y = Y.reshape(-1, 1)
+    X = torch.Tensor(X).to(device)
+    Y = torch.Tensor(Y).to(device)
 
-def f(W, batch_size=Batch_size, regression=regression, regularization=regularization, beta=0.01, device=device):
+    alpha = 0.0
+    if regularization:
+        alpha = 0.5*beta
+
+    psudeo_inv_X = torch.inverse(X.T@X + alpha)@X.T
+    return (psudeo_inv_X@Y).cpu().numpy()[0, 0]
+
+if regression:
+    opt_f = get_opt_reg()
+
+def f(W, batch_size=Batch_size, regression=regression, regularization=regularization, beta=beta, device=device):
     if regression:
         X, Y = datasets.load_diabetes(return_X_y=True)
         #print(X.shape, Y.shape)
@@ -157,4 +176,4 @@ def f(W, batch_size=Batch_size, regression=regression, regularization=regulariza
 if __name__ == "__main__":
     W = init_weights(layers)
     print(f(W))
-
+'''
