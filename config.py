@@ -4,10 +4,12 @@ from sklearn import datasets
 
 ######################################O###################
 
-device = "cpu"
+device = "cuda:3"
 A = torch.Tensor(np.load('data_files/A.npy')).to(device)
 N = A.shape[0]
 
+layers = [(31, 2)]
+batch_size = None
 #########################################################
 ## DEFINE COST FUNCTION WITH IT'S DERIVATIVE
 
@@ -99,8 +101,7 @@ def init_weights(layers, seed=69, device="cpu"):
     return W
 
 
-layers = [(31, 2)]
-def f(W, batch_size=2, regression=False, device="cpu"):
+def f(W, batch_size=batch_size, regression=False, device="cpu"):
     X, Y = datasets.load_breast_cancer(return_X_y=True)
     if not regression:
         nClasses = np.unique(Y).shape[0]
