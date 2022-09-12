@@ -29,7 +29,7 @@ if saveData:
 ############## BATCH COORDINATE DESCENT #################
 #########################################################
 ## NOISELESS APPROX GRADIENTS CONFIGURATION
-
+'''
 snr = np.inf
 approx = 1
 mu_noise = 0
@@ -163,6 +163,8 @@ plot_var_delta(values_gd_approx, values_gd_approx_noisy, deltas, title=r"BSGD va
 if saveData:
     np.save('./'+output_plots_dir+'/data_files' + '/Values_gd_approx.npy', values_gd_approx)
     np.save('./'+output_plots_dir+'/data_files' + '/Values_gd_approx_noisy.npy', values_gd_approx_noisy)
+'''
+
 ##################################################################################
 #################### Constant vs Blum ###########################
 # from config import *
@@ -170,11 +172,11 @@ if saveData:
 approx = 1
 mu_noise = 0
 batch_size = 512
-ITR_LIM = int(1e4)
+ITR_LIM = int(1e2)
 step = 1
 seed = 69
 load_phi = False
-c = 1e-6
+c = 1e-1
 is_BCD = True
 delta = 0.2
 return_params = True
@@ -237,4 +239,4 @@ if saveData:
     np.save('./'+output_plots_dir+'/data_files' + '/values_gd_approx.npy', values_gd_approx)
     np.save('./'+output_plots_dir+'/data_files' + '/values_gd_approx_noisy.npy', values_gd_approx_noisy)
     np.save('./'+output_plots_dir+'/data_files' + '/values_gd_approx_blum.npy', values_gd_approx_blum)
-    np.save('./'+output_plots_dir+'/data_files' + '/Values_gd_approx_blum_noisy.npy', values_gd_approx_blum_noisy)
+    np.save('./'+output_plots_dir+'/data_files' + '/values_gd_approx_blum_noisy.npy', values_gd_approx_blum_noisy)
