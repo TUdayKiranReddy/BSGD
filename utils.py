@@ -72,18 +72,18 @@ def gradient(df, phi, i=None, approx=None, snr=np.inf, mu=0, c=1e-6, batch_size=
 
     return grad
 
-def simulate(grad, f, GD, approx=1, mu_noise=0, snr=np.inf, is_BCD=False, delta=0.5, is_require_coords=False, batch_size=1, scheduler=True, ITR_LIM=1000, step=1, seed=None, load_phi=False, return_params=False, tau=2e2, phi=None, p=1, q=0.02, c=None, N=N, isDNN=isDNN, opt_f=opt_f):
+
+def simulate(grad, f, GD, approx=1, mu_noise=0, snr=np.inf, is_BCD=False, delta=0.5, is_require_coords=False, batch_size=1, scheduler=True, ITR_LIM=1000, step=1, seed=None, load_phi=False, return_params=False, tau=2e2, phi=None, p=1, q=0.02, c=1e-1, N=N, isDNN=isDNN, opt_f=opt_f, eps=1e-2):
     if load_phi:
         phi = torch.Tensor(np.load('./data_files/phi_2.npy').reshape(1, -1)).to(device)
     elif phi is None:
-        phi = 1e-3*torch.ones(size=(1, N)).to(device)
+        scale = 1e-3 if N == 1000 else 1.0
+        phi = scale*torch.ones(size=(1, N)).to(device)
 
     if isDNN:
         phi = init_weights(layers).to(device)
-    print(phi.shape)
-    opt = GD(snr=snr, approx=approx, mu_noise=mu_noise, device=device, batch_size=batch_size, seed=seed)
-    if c is not None:
-        opt.c = c
+    opt = GD(snr=snr, approx=approx, mu_noise=mu_noise, device=device, batch_size=batch_size, seed=seed, c0=c, eps0=eps)
+
     print(opt.snr)
     if hasattr(opt, 'nesterov_sequence'):
         opt.nesterov_sequence = True
@@ -101,7 +101,7 @@ def simulate(grad, f, GD, approx=1, mu_noise=0, snr=np.inf, is_BCD=False, delta=
 
     opt.start(phi)
 
-    values_0 = [f(opt.phi, device=device).cpu().numpy()-opt_f]
+    values_0 = [np.abs(f(opt.phi, device=device).cpu().numpy()-opt_f)]
     print("Initial Value: {} Optimal Value: {} #Params: {}".format(values_0[0], opt_f, phi.shape[1]))
     params_c = []
     params_eps = []
@@ -118,7 +118,7 @@ def simulate(grad, f, GD, approx=1, mu_noise=0, snr=np.inf, is_BCD=False, delta=
         if return_params:
             params_c.append(opt.gamma if hasattr(opt, 'gamma') else opt.c)
             params_eps.append(opt.eps)
-        values_0.append(f(opt.phi, device=device).cpu().numpy()-opt_f)
+        values_0.append(np.abs(f(opt.phi, device=device).cpu().numpy()-opt_f))
 
 
     if is_require_coords and return_params:

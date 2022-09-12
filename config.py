@@ -5,23 +5,23 @@ from sklearn import datasets
 ######################################O###################
 
 device = "cpu"
-A = torch.Tensor(np.load('data_files/A.npy')).to(device)
+A = torch.Tensor(np.load('data_files/A_10.npy')).to(device)
 N = A.shape[0]
 
 layers = [(11, 1)]
 regression = True
 regularization = True
-l1 = False
+l1 = True
 beta = 0.1
 Batch_size = 128
 
 opt_f = 6.9052555215155556
-#opt_f 0.0
-isDNN = True
+opt_f = 0.0
+isDNN = False
 #########################################################
 ## DEFINE COST FUNCTION WITH IT'S DERIVATIVE
 
-'''
+
 ## QUADRACTIC FORM
 
 def f(x, A=A, device=device):
@@ -32,7 +32,7 @@ def df(x, A=A, device=device):
     return (2*x@A).to(device)
 '''
 
-'''
+
 ## LOGSUMEXP
 
 def log_sum_exp(x, temp=1.0):
@@ -122,57 +122,66 @@ def get_opt_reg(device=device):
     psudeo_inv_X = torch.inverse(X.T@X + alpha)@X.T
     return (psudeo_inv_X@Y).cpu().numpy()[0, 0]
 
-if regression:
-    opt_f = get_opt_reg()
-
-def f(W, batch_size=Batch_size, regression=regression, l1=l1, regularization=regularization, beta=beta, device=device):
+if isDNN:
     if regression:
-        X, Y = datasets.load_diabetes(return_X_y=True)
-        #print(X.shape, Y.shape)
-    else:
-        X, Y = datasets.load_breast_cancer(return_X_y=True)
+        opt_f = get_opt_reg()
 
-    if not regression:
-        nClasses = np.unique(Y).shape[0]
+    def f(W, batch_size=Batch_size, regression=regression, l1=l1, regularization=regularization, beta=beta, device=device):
+        if regression:
+            X, Y = datasets.load_diabetes(return_X_y=True)
+            #print(X.shape, Y.shape)
+        else:
+            X, Y = datasets.load_breast_cancer(return_X_y=True)
 
-    if batch_size is not None:
-        idxs = np.arange(X.shape[0])
-        np.random.shuffle(idxs)
-        X = torch.Tensor(X[:batch_size, :]).to(device)
-        Y = torch.Tensor(Y[:batch_size]).to(device)
-    else:
-        X = torch.Tensor(X).to(device)
-        Y = torch.Tensor(Y).to(device)
-    M = X.shape[1]
-    Y_hat = None
-    loss = None
-    if regression:
-        Y_hat = mlp(X, W, layers=layers, bias=True, activations=[None]*len(layers))
-        #print(W.shape, Y_hat.shape)
-        loss = torch.nn.MSELoss()
-    else:
-        Y_hat = mlp(X, W, layers=layers, bias=True, activations=[None]*len(layers))
-        loss = torch.nn.CrossEntropyLoss()
-        Y = Y.type(torch.long)
-    if regularization:
-        if W.shape[0] == 1:
-            z = loss(torch.squeeze(Y_hat), Y) + beta*W@W.T
+        if not regression:
+            nClasses = np.unique(Y).shape[0]
+
+        if batch_size is not None:
+            idxs = np.arange(X.shape[0])
+            np.random.shuffle(idxs)
+            X = torch.Tensor(X[:batch_size, :]).to(device)
+            Y = torch.Tensor(Y[:batch_size]).to(device)
         else:
-            z = torch.Tensor([loss(torch.squeeze(Y_hat[i]), Y) + beta*W[i]@W[i].T for i in range(W.shape[0])])
-    else:
-        if W.shape[0] == 1:
-            z = loss(torch.squeeze(Y_hat), Y)
+            X = torch.Tensor(X).to(device)
+            Y = torch.Tensor(Y).to(device)
+        M = X.shape[1]
+        Y_hat = None
+        loss = None
+        if regression:
+            Y_hat = mlp(X, W, layers=layers, bias=True, activations=[None]*len(layers))
+            #print(W.shape, Y_hat.shape)
+            loss = torch.nn.MSELoss()
         else:
-            #print(Y_hat[0].shape, Y.shape)
-            z = torch.Tensor([loss(torch.squeeze(y_hat), Y) for y_hat in Y_hat])
-    if z.numel() == 1:
-        if z.ndim == 1:
-            return z[0]
-        elif z.ndim == 2:
-            return z[0, 0]
+            Y_hat = mlp(X, W, layers=layers, bias=True, activations=[None]*len(layers))
+            loss = torch.nn.CrossEntropyLoss()
+            Y = Y.type(torch.long)
+        if regularization:
+            if W.shape[0] == 1:
+                if l1:
+                    z = loss(torch.squeeze(Y_hat), Y) + beta*torch.sum(torch.abs(W))
+
+                else:
+                    z = loss(torch.squeeze(Y_hat), Y) + beta*W@W.T
+            else:
+                if l1:
+                    z = torch.Tensor([loss(torch.squeeze(Y_hat[i]), Y) + beta*torch.sum(torch.abs(W[i])) for i in range(W.shape[0])])
+
+                else:
+                    z = torch.Tensor([loss(torch.squeeze(Y_hat[i]), Y) + beta*W[i]@W[i].T for i in range(W.shape[0])])
         else:
-            return z
-    return z
+            if W.shape[0] == 1:
+                z = loss(torch.squeeze(Y_hat), Y)
+            else:
+                #print(Y_hat[0].shape, Y.shape)
+                z = torch.Tensor([loss(torch.squeeze(y_hat), Y) for y_hat in Y_hat])
+        if z.numel() == 1:
+            if z.ndim == 1:
+                return z[0]
+            elif z.ndim == 2:
+                return z[0, 0]
+            else:
+                return z
+        return z
 
 
 if __name__ == "__main__":

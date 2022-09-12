@@ -11,7 +11,7 @@ from utils import *
 from optimizers import *
 from config import *
 
-output_plots_dir = 'regression_batch_noisy_plots'
+output_plots_dir = 'plots'
 saveData = True
 import os
 try:
@@ -23,13 +23,94 @@ if saveData:
     try:
         os.mkdir('./'+output_plots_dir+'/data_files')
     except OSError as error:
-        print(output_plots_dir + " already exists!")
+        print(output_plots_dir + '/data_files' + " already exists!")
 
 #########################################################
 ############## BATCH COORDINATE DESCENT #################
 #########################################################
-## NOISELESS APPROX GRADIENTS CONFIGURATION
 '''
+## NOISLESS EXACT GRADIENTS CONFIGURATION
+
+snr = np.inf
+approx = None
+mu_noise = 0
+batch_size = 512
+delta = 1
+seed = 69
+c = 1e-2
+eps = 1e-2
+is_BCD = False
+scheduler = False
+#######################################################
+
+values_gd_exact = simulate(df, f, GD, approx=approx, mu_noise=mu_noise, snr=snr, batch_size=batch_size, is_BCD=is_BCD, delta=delta, seed=seed, isDNN=isDNN, scheduler=scheduler, c=c, eps=eps)
+values_nag_exact = simulate(df, f, NAG, approx=approx, mu_noise=mu_noise, snr=snr, batch_size=batch_size, is_BCD=is_BCD, delta=delta, seed=seed, isDNN=isDNN, scheduler=scheduler, c=c, eps=eps)
+values_nag_suts_exact = simulate(df, f, NAG_sutskever, approx=approx, mu_noise=mu_noise, snr=snr, batch_size=batch_size, is_BCD=is_BCD, delta=delta, seed=seed, isDNN=isDNN, scheduler=scheduler, c=c, eps=eps)
+values_nag_ben_exact = simulate(df, f, NAG_bengio, approx=approx, mu_noise=mu_noise, snr=snr, batch_size=batch_size, is_BCD=is_BCD, delta=delta, seed=seed, isDNN=isDNN, scheduler=scheduler, c=c, eps=eps)
+######################################################
+
+## 50dB-NOISY EXACT GRADIENTS CONFIGURATION
+
+snr_exact = 20
+approx = None
+mu_noise = 0
+batch_size = 512
+seed = 69
+#####################################################
+
+values_gd_exact_noisy = simulate(df, f, GD, approx=approx, mu_noise=mu_noise, snr=snr_exact, batch_size=batch_size, is_BCD=is_BCD, delta=delta, seed=seed, isDNN=isDNN, scheduler=scheduler, c=c, eps=eps)
+values_nag_exact_noisy = simulate(df, f, NAG, approx=approx, mu_noise=mu_noise, snr=snr_exact, batch_size=batch_size, is_BCD=is_BCD, delta=delta, seed=seed, isDNN=isDNN, scheduler=scheduler, c=c, eps=eps)
+values_nag_suts_exact_noisy = simulate(df, f, NAG_sutskever, approx=approx, mu_noise=mu_noise, snr=snr_exact, batch_size=batch_size, is_BCD=is_BCD, delta=delta, seed=seed, isDNN=isDNN, scheduler=scheduler, c=c, eps=eps)
+values_nag_ben_exact_noisy = simulate(df, f, NAG_bengio, approx=approx, mu_noise=mu_noise, snr=snr_exact, batch_size=batch_size, is_BCD=is_BCD, delta=delta, seed=seed, isDNN=isDNN, scheduler=scheduler, c=c, eps=eps)
+
+#### PLOTTING #################################################
+plt.figure(figsize=(20, 10))
+plt.suptitle(r"Comparing Steepest GD, $\rho$={}".format(delta), fontsize=30)
+
+plt.subplot(1,2,1)
+plt.title(r"Exact Gradients at SNR=$\infty$ dB", fontsize=25)
+plt.semilogy(values_nag_exact, label="NAG")
+plt.semilogy(values_nag_suts_exact, '-.', label="Sutskever's NAG")
+plt.semilogy(values_nag_ben_exact, '--', label="Bengio's NAG")
+plt.semilogy(values_gd_exact, label="BSGD")
+plt.xlabel(r't', fontsize=20)
+plt.ylabel(r'$|J({\boldsymbol{\theta}_t}) - J({\boldsymbol{\theta}^*})|$', fontsize=20)
+plt.xticks(fontsize=14);
+plt.yticks(fontsize=14);
+
+
+plt.subplot(1,2,2)
+plt.title("Exact Gradients at SNR={} dB".format(snr_exact), fontsize=25)
+plt.semilogy(values_nag_exact_noisy, label="NAG")
+plt.semilogy(values_nag_suts_exact_noisy, '-.', label="Sutskever's NAG")
+plt.semilogy(values_nag_ben_exact_noisy, '--', label="Bengio's NAG")
+plt.semilogy(values_gd_exact_noisy, label="Steepest GD")
+plt.xlabel(r't', fontsize=20)
+plt.ylabel(r'$|J({\boldsymbol{\theta}_t}) - J({\boldsymbol{\theta}^*})|$', fontsize=20)
+plt.xticks(fontsize=14);
+plt.yticks(fontsize=14);
+
+plt.legend(loc='upper right', bbox_to_anchor=(0.85, -0.08),
+          fancybox=True, shadow=True, ncol=5, fontsize=25)
+
+plt.savefig('./'+output_plots_dir+'/Exact_asynchronous_comparisions_all_{}dB.jpg'.format(snr_exact), bbox_inches='tight')
+
+
+if saveData:
+    np.save('./'+output_plots_dir+'/data_files' + '/values_gd_exact.npy', values_gd_exact)
+    np.save('./'+output_plots_dir+'/data_files' + '/values_nag_exact.npy', values_nag_exact)
+    np.save('./'+output_plots_dir+'/data_files' + '/values_nag_suts_exact.npy', values_nag_suts_exact)
+    np.save('./'+output_plots_dir+'/data_files' + '/values_nag_ben_exact.npy', values_nag_ben_exact)
+
+    np.save('./'+output_plots_dir+'/data_files' + '/values_gd_exact_noisy.npy', values_gd_exact_noisy)
+    np.save('./'+output_plots_dir+'/data_files' + '/values_nag_exact_noisy.npy', values_nag_exact_noisy)
+    np.save('./'+output_plots_dir+'/data_files' + '/values_nag_suts_exact_noisy.npy', values_nag_suts_exact_noisy)
+    np.save('./'+output_plots_dir+'/data_files' + '/values_nag_ben_exact_noisy.npy', values_nag_ben_exact_noisy)
+
+exit()
+'''
+## NOISELESS APPROX GRADIENTS CONFIGURATION
+
 snr = np.inf
 approx = 1
 mu_noise = 0
@@ -111,6 +192,8 @@ approx = 1
 mu_noise = 0
 batch_size = 128
 deltas = np.linspace(0.05, 0.2, 11)
+
+
 '''
 N = 100
 A = torch.Tensor(np.load('data_files/A_10.npy')).to(device)
@@ -124,7 +207,7 @@ def df(x, A=A, device=device):
 '''
 
 
-phi = 1e-2*torch.ones(size=(1, N)).to(device)
+phi = torch.ones(size=(1, N)).to(device)
 
 ###############################
 # Approximate
@@ -163,69 +246,69 @@ plot_var_delta(values_gd_approx, values_gd_approx_noisy, deltas, title=r"BSGD va
 if saveData:
     np.save('./'+output_plots_dir+'/data_files' + '/Values_gd_approx.npy', values_gd_approx)
     np.save('./'+output_plots_dir+'/data_files' + '/Values_gd_approx_noisy.npy', values_gd_approx_noisy)
-'''
+
 
 ##################################################################################
 #################### Constant vs Blum ###########################
-# from config import *
 ################ Config #############
 approx = 1
 mu_noise = 0
 batch_size = 512
-ITR_LIM = int(1e2)
+ITR_LIM = int(1e4)
 step = 1
 seed = 69
 load_phi = False
-c = 1e-1
+c = 1e-2
+eps = 1e-2
 is_BCD = True
 delta = 0.2
 return_params = True
 tau = 2e2
 (p, q) = (1, 0.02)
 
-phi = 1e-1*torch.ones(size=(1, N)).to(device)
+phi = torch.ones(size=(1, N)).to(device)
 
-snr = -10
+snr = 10
 
 x_gd_approx, values_gd_approx,\
 params_c_gd_approx, params_eps_gd_approx = simulate(f, f, GD, is_require_coords=True, approx=approx,
                                                     mu_noise=mu_noise, snr=snr, batch_size=batch_size,
                                                     scheduler=False, ITR_LIM=ITR_LIM, step=step, seed=seed,
                                                     load_phi=load_phi, return_params=return_params,
-                                                    tau=tau, phi=phi, p=p, q=q, is_BCD=is_BCD, delta=delta, c=c)
+                                                    tau=tau, phi=phi, p=p, q=q, is_BCD=is_BCD, delta=delta, c=c, eps=eps)
 x_gd_approx_blum, values_gd_approx_blum,\
 params_c_gd_approx_blum, params_eps_gd_approx_blum = simulate(f, f, GD, is_require_coords=True,
                                                               approx=approx, mu_noise=mu_noise, snr=snr,
                                                               batch_size=batch_size, scheduler=True,
                                                               ITR_LIM=ITR_LIM, step=step, seed=seed,
                                                               load_phi=load_phi, return_params=return_params,
-                                                              tau=tau, phi=phi, p=p, q=q, is_BCD=is_BCD, delta=delta, c=c)
+                                                              tau=tau, phi=phi, p=p, q=q, is_BCD=is_BCD, delta=delta, c=c, eps=eps)
 
 
-snr = 0
+snr1 = 20
 
 x_gd_approx, values_gd_approx_noisy,\
 params_c_gd_approx, params_eps_gd_approx = simulate(f, f, GD, is_require_coords=True, approx=approx,
                                                     mu_noise=mu_noise, snr=snr, batch_size=batch_size,
                                                     scheduler=False, ITR_LIM=ITR_LIM, step=step, seed=seed,
                                                     load_phi=load_phi, return_params=return_params,
-                                                    tau=tau, phi=phi, p=p, q=q, is_BCD=is_BCD, delta=delta, c=c)
+                                                    tau=tau, phi=phi, p=p, q=q, is_BCD=is_BCD, delta=delta, c=c, eps=eps)
 x_gd_approx_blum, values_gd_approx_blum_noisy,\
 params_c_gd_approx_blum, params_eps_gd_approx_blum = simulate(f, f, GD, is_require_coords=True,
-                                                              approx=approx, mu_noise=mu_noise, snr=snr,
+                                                              approx=approx, mu_noise=mu_noise, snr=snr1,
                                                               batch_size=batch_size, scheduler=True,
                                                               ITR_LIM=ITR_LIM, step=step, seed=seed,
                                                               load_phi=load_phi, return_params=return_params,
-                                                              tau=tau, phi=phi, p=p, q=q, is_BCD=is_BCD, delta=delta, c=c)
+                                                              tau=tau, phi=phi, p=p, q=q, is_BCD=is_BCD, delta=delta, c=c, eps=eps)
 
 
 plt.figure(figsize=(12, 8))
 plt.title(r"Constant step size vs Blum's condition, $\rho$ = 0.2", fontsize=25)
 
-plt.semilogy(values_gd_approx_noisy, label="Constant Step Size at SNR = 10 dB")
-plt.semilogy(values_gd_approx, label="Constant Step Size at SNR = 20 dB")
-plt.semilogy(values_gd_approx_blum_noisy, label="Blum's conditions at SNR = 10 dB")
-plt.semilogy(values_gd_approx_blum, label="Blum's conditions at SNR = 20 dB")
+plt.semilogy(values_gd_approx, label="Constant Step Size at SNR = {} dB".format(snr))
+plt.semilogy(values_gd_approx_noisy, label="Constant Step Size at SNR = {} dB".format(snr1))
+plt.semilogy(values_gd_approx_blum, label="Blum's conditions at SNR = {} dB".format(snr))
+plt.semilogy(values_gd_approx_blum_noisy, label="Blum's conditions at SNR = {} dB".format(snr1))
 plt.xlabel(r't', fontsize=20)
 plt.ylabel(r'$|J({\boldsymbol {\theta}_t}) - J({\boldsymbol {\theta}^*})|$', fontsize=20)
 plt.xticks(fontsize=14);
