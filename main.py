@@ -11,7 +11,7 @@ from utils import *
 from optimizers import *
 from config import *
 
-output_plots_dir = 'plots'
+output_plots_dir = 'diabetes_l1_reg_plots'
 saveData = True
 import os
 try:
@@ -28,9 +28,9 @@ if saveData:
 #########################################################
 ############## BATCH COORDINATE DESCENT #################
 #########################################################
-'''
-## NOISLESS EXACT GRADIENTS CONFIGURATION
 
+## NOISLESS EXACT GRADIENTS CONFIGURATION
+'''
 snr = np.inf
 approx = None
 mu_noise = 0
@@ -51,7 +51,7 @@ values_nag_ben_exact = simulate(df, f, NAG_bengio, approx=approx, mu_noise=mu_no
 
 ## 50dB-NOISY EXACT GRADIENTS CONFIGURATION
 
-snr_exact = 20
+snr_exact = 50
 approx = None
 mu_noise = 0
 batch_size = 512
@@ -107,7 +107,7 @@ if saveData:
     np.save('./'+output_plots_dir+'/data_files' + '/values_nag_suts_exact_noisy.npy', values_nag_suts_exact_noisy)
     np.save('./'+output_plots_dir+'/data_files' + '/values_nag_ben_exact_noisy.npy', values_nag_ben_exact_noisy)
 
-exit()
+#exit()
 '''
 ## NOISELESS APPROX GRADIENTS CONFIGURATION
 
@@ -128,11 +128,11 @@ values_nag_ben_approx = simulate(f, f, NAG_bengio, approx=approx, mu_noise=mu_no
 
 ## 50dB-NOISY APPROX GRADIENTS CONFIGURATION
 
-snr_approx = 10
+snr_approx = 20
 approx = 1
 mu_noise = 0
 batch_size = 512
-seed = 70
+seed = 69
 #####################################################
 
 values_gd_approx_noisy = simulate(f, f, GD, approx=approx, mu_noise=mu_noise, snr=snr_approx, batch_size=batch_size, is_BCD=is_BCD, delta=delta, seed=seed, isDNN=isDNN)
@@ -183,7 +183,7 @@ if saveData:
     np.save('./'+output_plots_dir+'/data_files' + '/values_nag_approx_noisy.npy', values_nag_approx_noisy)
     np.save('./'+output_plots_dir+'/data_files' + '/values_nag_suts_approx_noisy.npy', values_nag_suts_approx_noisy)
     np.save('./'+output_plots_dir+'/data_files' + '/values_nag_ben_approx_noisy.npy', values_nag_ben_approx_noisy)
-
+#exit()
 
 ########################################################################################
 ######################## BSGD varying \rho #####################
@@ -251,6 +251,7 @@ if saveData:
 ##################################################################################
 #################### Constant vs Blum ###########################
 ################ Config #############
+
 approx = 1
 mu_noise = 0
 batch_size = 512
@@ -258,7 +259,7 @@ ITR_LIM = int(1e4)
 step = 1
 seed = 69
 load_phi = False
-c = 1e-2
+c = 1e-1
 eps = 1e-2
 is_BCD = True
 delta = 0.2
@@ -323,3 +324,32 @@ if saveData:
     np.save('./'+output_plots_dir+'/data_files' + '/values_gd_approx_noisy.npy', values_gd_approx_noisy)
     np.save('./'+output_plots_dir+'/data_files' + '/values_gd_approx_blum.npy', values_gd_approx_blum)
     np.save('./'+output_plots_dir+'/data_files' + '/values_gd_approx_blum_noisy.npy', values_gd_approx_blum_noisy)
+
+'''
+approx = 1
+delta = 0.2
+phi = torch.zeros((1, N)).to(device)
+ITR_LIM = 1000
+mu_noise = 0.0
+batch_size = 512
+scheduler = True
+seed = 69
+nMC = 5
+
+val_approx = 0
+val_approx_noisy = 0
+for _ in range(nMC):
+    snr = np.inf
+    val_approx += np.array(simulate(f, f, GD, approx=approx, mu_noise=mu_noise, snr=snr, batch_size=batch_size, is_BCD=True, delta=delta, scheduler=scheduler, seed=seed, ITR_LIM=ITR_LIM, load_phi=False, phi=phi))
+
+    snr = 20
+
+    val_approx_noisy += np.array(simulate(f, f, GD, approx=approx, mu_noise=mu_noise, snr=snr, batch_size=batch_size, is_BCD=True, delta=delta, scheduler=scheduler, seed=seed, ITR_LIM=ITR_LIM, load_phi=False, phi=phi))
+
+val_approx /= nMC
+val_approx_noisy /= nMC
+
+if saveData:
+    np.save('./'+output_plots_dir+'/data_files' + '/val_approx_full.npy', val_approx)
+    np.save('./'+output_plots_dir+'/data_files' + '/val_approx_noisy_full.npy', val_approx_noisy)
+'''

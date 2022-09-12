@@ -12,12 +12,12 @@ layers = [(11, 1)]
 regression = True
 regularization = True
 l1 = True
-beta = 0.1
-Batch_size = 128
+beta = 0.01
+Batch_size = None
 
 opt_f = 6.9052555215155556
 opt_f = 0.0
-isDNN = False
+isDNN = True
 #########################################################
 ## DEFINE COST FUNCTION WITH IT'S DERIVATIVE
 
