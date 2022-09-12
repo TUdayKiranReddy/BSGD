@@ -11,7 +11,7 @@ from utils import *
 from optimizers import *
 from config import *
 
-output_plots_dir = 'quad_logsumexp_plots'
+output_plots_dir = 'regression_batch_noisy_plots'
 saveData = True
 import os
 try:
@@ -36,7 +36,6 @@ mu_noise = 0
 batch_size = 512
 delta = 0.2
 seed = 69
-isDNN = True
 is_BCD = False
 #######################################################
 

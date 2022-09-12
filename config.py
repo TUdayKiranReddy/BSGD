@@ -11,11 +11,13 @@ N = A.shape[0]
 layers = [(11, 1)]
 regression = True
 regularization = True
+l1 = False
 beta = 0.1
-Batch_size = None
+Batch_size = 128
 
-opt_f = 0.0
-isDNN = False
+opt_f = 6.9052555215155556
+#opt_f 0.0
+isDNN = True
 #########################################################
 ## DEFINE COST FUNCTION WITH IT'S DERIVATIVE
 
@@ -30,7 +32,7 @@ def df(x, A=A, device=device):
     return (2*x@A).to(device)
 '''
 
-
+'''
 ## LOGSUMEXP
 
 def log_sum_exp(x, temp=1.0):
@@ -49,7 +51,7 @@ def d_log_sum_exp(x, temp=1.0):
 
 def f(x, A=A, temp=1.0, device=device):
     y = x@A@x.T + torch.logsumexp(temp*x, dim=1)
-    return torch.diag(y) - 6.9052555215155556
+    return torch.diag(y)
 
 def df(x, A=A, temp=1.0, device=device):
     return (2*x@A + temp*torch.nn.functional.softmax(x, dim=1)).to(device)
@@ -123,7 +125,7 @@ def get_opt_reg(device=device):
 if regression:
     opt_f = get_opt_reg()
 
-def f(W, batch_size=Batch_size, regression=regression, regularization=regularization, beta=beta, device=device):
+def f(W, batch_size=Batch_size, regression=regression, l1=l1, regularization=regularization, beta=beta, device=device):
     if regression:
         X, Y = datasets.load_diabetes(return_X_y=True)
         #print(X.shape, Y.shape)
@@ -176,4 +178,4 @@ def f(W, batch_size=Batch_size, regression=regression, regularization=regulariza
 if __name__ == "__main__":
     W = init_weights(layers)
     print(f(W))
-'''
+
