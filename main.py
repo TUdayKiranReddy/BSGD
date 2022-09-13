@@ -11,7 +11,7 @@ from utils import *
 from optimizers import *
 from config import *
 
-output_plots_dir = 'diabetes_l1_reg_plots'
+output_plots_dir = '100_plots'
 saveData = True
 import os
 try:
@@ -30,17 +30,17 @@ if saveData:
 #########################################################
 
 ## NOISLESS EXACT GRADIENTS CONFIGURATION
-'''
+
 snr = np.inf
 approx = None
 mu_noise = 0
 batch_size = 512
-delta = 1
+delta = 0.2
 seed = 69
 c = 1e-2
 eps = 1e-2
-is_BCD = False
-scheduler = False
+is_BCD = True
+scheduler = True
 #######################################################
 
 values_gd_exact = simulate(df, f, GD, approx=approx, mu_noise=mu_noise, snr=snr, batch_size=batch_size, is_BCD=is_BCD, delta=delta, seed=seed, isDNN=isDNN, scheduler=scheduler, c=c, eps=eps)
@@ -65,7 +65,7 @@ values_nag_ben_exact_noisy = simulate(df, f, NAG_bengio, approx=approx, mu_noise
 
 #### PLOTTING #################################################
 plt.figure(figsize=(20, 10))
-plt.suptitle(r"Comparing Steepest GD, $\rho$={}".format(delta), fontsize=30)
+plt.suptitle(r"Comparing BSGD, $\rho$={}".format(delta), fontsize=30)
 
 plt.subplot(1,2,1)
 plt.title(r"Exact Gradients at SNR=$\infty$ dB", fontsize=25)
@@ -84,7 +84,7 @@ plt.title("Exact Gradients at SNR={} dB".format(snr_exact), fontsize=25)
 plt.semilogy(values_nag_exact_noisy, label="NAG")
 plt.semilogy(values_nag_suts_exact_noisy, '-.', label="Sutskever's NAG")
 plt.semilogy(values_nag_ben_exact_noisy, '--', label="Bengio's NAG")
-plt.semilogy(values_gd_exact_noisy, label="Steepest GD")
+plt.semilogy(values_gd_exact_noisy, label="BSGD")
 plt.xlabel(r't', fontsize=20)
 plt.ylabel(r'$|J({\boldsymbol{\theta}_t}) - J({\boldsymbol{\theta}^*})|$', fontsize=20)
 plt.xticks(fontsize=14);
@@ -108,7 +108,7 @@ if saveData:
     np.save('./'+output_plots_dir+'/data_files' + '/values_nag_ben_exact_noisy.npy', values_nag_ben_exact_noisy)
 
 #exit()
-'''
+
 ## NOISELESS APPROX GRADIENTS CONFIGURATION
 
 snr = np.inf
@@ -117,7 +117,7 @@ mu_noise = 0
 batch_size = 512
 delta = 0.2
 seed = 69
-is_BCD = False
+is_BCD = True
 #######################################################
 
 values_gd_approx = simulate(f, f, GD, approx=approx, mu_noise=mu_noise, snr=snr, batch_size=batch_size, is_BCD=is_BCD, delta=delta, seed=seed, isDNN=isDNN)
@@ -128,7 +128,7 @@ values_nag_ben_approx = simulate(f, f, NAG_bengio, approx=approx, mu_noise=mu_no
 
 ## 50dB-NOISY APPROX GRADIENTS CONFIGURATION
 
-snr_approx = 20
+snr_approx = 50
 approx = 1
 mu_noise = 0
 batch_size = 512
@@ -267,7 +267,7 @@ return_params = True
 tau = 2e2
 (p, q) = (1, 0.02)
 
-phi = torch.ones(size=(1, N)).to(device)
+phi = 1e-1*torch.ones(size=(1, N)).to(device)
 
 snr = 10
 
@@ -325,7 +325,6 @@ if saveData:
     np.save('./'+output_plots_dir+'/data_files' + '/values_gd_approx_blum.npy', values_gd_approx_blum)
     np.save('./'+output_plots_dir+'/data_files' + '/values_gd_approx_blum_noisy.npy', values_gd_approx_blum_noisy)
 
-'''
 approx = 1
 delta = 0.2
 phi = torch.zeros((1, N)).to(device)
@@ -352,4 +351,4 @@ val_approx_noisy /= nMC
 if saveData:
     np.save('./'+output_plots_dir+'/data_files' + '/val_approx_full.npy', val_approx)
     np.save('./'+output_plots_dir+'/data_files' + '/val_approx_noisy_full.npy', val_approx_noisy)
-'''
+

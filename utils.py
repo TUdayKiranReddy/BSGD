@@ -44,7 +44,13 @@ def first_order_approx(f, phi, i, batch_size=64, eps=1e-6, snr=10, mu=0, device=
 def gradient(df, phi, i=None, approx=None, snr=np.inf, mu=0, c=1e-6, batch_size=64, device=device):
 
     if approx is None:
-        return add_noise(df(phi), snr, mu, device)
+        gd = add_noise(df(phi), snr, mu, device)
+        if i is None:
+            return gd
+        else:
+            mask = np.logical_not(np.isin(np.arange(phi.shape[1]), np.array(i)))
+            gd[:, mask] = 0
+            return gd
 
     n = phi.shape[1]
     grad = torch.zeros(size=(1, n)).to(device)
@@ -73,7 +79,7 @@ def gradient(df, phi, i=None, approx=None, snr=np.inf, mu=0, c=1e-6, batch_size=
     return grad
 
 
-def simulate(grad, f, GD, approx=1, mu_noise=0, snr=np.inf, is_BCD=False, delta=0.5, is_require_coords=False, batch_size=1, scheduler=True, ITR_LIM=1000, step=1, seed=None, load_phi=False, return_params=False, tau=2e2, phi=None, p=1, q=0.02, c=1e-1, N=N, isDNN=isDNN, opt_f=opt_f, eps=1e-2):
+def simulate(grad, f, GD, approx=1, mu_noise=0, snr=np.inf, is_BCD=False, delta=0.5, is_require_coords=False, batch_size=1, scheduler=True, ITR_LIM=10000, step=1, seed=None, load_phi=False, return_params=False, tau=2e2, phi=None, p=1, q=0.02, c=1e-1, N=N, isDNN=isDNN, opt_f=opt_f, eps=1e-2):
     if load_phi:
         phi = torch.Tensor(np.load('./data_files/phi_2.npy').reshape(1, -1)).to(device)
     elif phi is None:

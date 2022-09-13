@@ -53,7 +53,7 @@ class GD():
         N = self.phi.shape[1]
 
         i = None
-        if self.BCD:
+        if self.BCD and self.p_pick != 1:
             idx = np.random.binomial(1, p=self.p_pick, size=(N, )) == 1
             i = torch.arange(N)[idx].to(self.device)
         else:

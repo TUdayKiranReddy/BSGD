@@ -17,7 +17,7 @@ Batch_size = None
 
 opt_f = 6.9052555215155556
 opt_f = 0.0
-isDNN = True
+isDNN = False
 #########################################################
 ## DEFINE COST FUNCTION WITH IT'S DERIVATIVE
 
@@ -31,7 +31,6 @@ def f(x, A=A, device=device):
 def df(x, A=A, device=device):
     return (2*x@A).to(device)
 '''
-
 
 ## LOGSUMEXP
 
