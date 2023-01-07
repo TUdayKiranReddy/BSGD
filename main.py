@@ -11,7 +11,7 @@ from utils import *
 from optimizers import *
 from config import *
 
-output_plots_dir = '100_plots'
+output_plots_dir = '100_plots_logsum_exp'
 saveData = True
 import os
 try:
@@ -30,7 +30,7 @@ if saveData:
 #########################################################
 
 ## NOISLESS EXACT GRADIENTS CONFIGURATION
-
+'''
 snr = np.inf
 approx = None
 mu_noise = 0
@@ -193,7 +193,7 @@ mu_noise = 0
 batch_size = 128
 deltas = np.linspace(0.05, 0.2, 11)
 
-
+'''
 '''
 N = 100
 A = torch.Tensor(np.load('data_files/A_10.npy')).to(device)
@@ -206,7 +206,7 @@ def df(x, A=A, device=device):
     return (2*x@A).to(device)
 '''
 
-
+'''
 phi = torch.ones(size=(1, N)).to(device)
 
 ###############################
@@ -247,7 +247,7 @@ if saveData:
     np.save('./'+output_plots_dir+'/data_files' + '/Values_gd_approx.npy', values_gd_approx)
     np.save('./'+output_plots_dir+'/data_files' + '/Values_gd_approx_noisy.npy', values_gd_approx_noisy)
 
-
+'''
 ##################################################################################
 #################### Constant vs Blum ###########################
 ################ Config #############
@@ -259,7 +259,7 @@ ITR_LIM = int(1e4)
 step = 1
 seed = 69
 load_phi = False
-c = 1e-1
+c = 1e-2
 eps = 1e-2
 is_BCD = True
 delta = 0.2
@@ -267,7 +267,7 @@ return_params = True
 tau = 2e2
 (p, q) = (1, 0.02)
 
-phi = 1e-1*torch.ones(size=(1, N)).to(device)
+phi = 1*torch.ones(size=(1, N)).to(device)
 
 snr = 10
 
@@ -325,6 +325,7 @@ if saveData:
     np.save('./'+output_plots_dir+'/data_files' + '/values_gd_approx_blum.npy', values_gd_approx_blum)
     np.save('./'+output_plots_dir+'/data_files' + '/values_gd_approx_blum_noisy.npy', values_gd_approx_blum_noisy)
 
+exit()
 approx = 1
 delta = 0.2
 phi = torch.zeros((1, N)).to(device)

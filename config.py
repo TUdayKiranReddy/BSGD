@@ -15,7 +15,7 @@ l1 = True
 beta = 0.01
 Batch_size = None
 
-opt_f = 6.9052555215155556
+# opt_f = 6.9052555215155556
 opt_f = 0.0
 isDNN = False
 #########################################################
@@ -30,7 +30,7 @@ def f(x, A=A, device=device):
 
 def df(x, A=A, device=device):
     return (2*x@A).to(device)
-'''
+
 
 ## LOGSUMEXP
 
@@ -48,13 +48,13 @@ def softmax(x, temp=1.0):
 def d_log_sum_exp(x, temp=1.0):
     return temp*softmax(x, temp=temp)
 
-def f(x, A=A, temp=1.0, device=device):
-    y = x@A@x.T + torch.logsumexp(temp*x, dim=1)
-    return torch.diag(y)
+# def f(x, A=A, temp=1.0, device=device):
+#     y = x@A@x.T + torch.logsumexp(temp*x, dim=1)
+#     return torch.diag(y)
 
-def df(x, A=A, temp=1.0, device=device):
-    return (2*x@A + temp*torch.nn.functional.softmax(x, dim=1)).to(device)
-'''
+# def df(x, A=A, temp=1.0, device=device):
+#     return (2*x@A + temp*torch.nn.functional.softmax(x, dim=1)).to(device)
+
 
 ## MLP
 

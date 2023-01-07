@@ -34,12 +34,29 @@ def first_order_approx(f, phi, i, batch_size=64, eps=1e-6, snr=10, mu=0, device=
     batch_phi = torch.squeeze(phi.expand(batch_size, 1, n), dim=1)
 
     e_i = torch.zeros((batch_size, n)).to(device)
-
+    
+    eps_batch = torch.zeros((batch_size, 1)).to(device)
+    
     for b_i, ii in enumerate(i):
         e_i[b_i, ii] = 1
+        if type(eps) == np.ndarray: 
+            eps_batch[b_i, 0] = eps[ii]
+        else:
+            eps_batch[b_i, 0] = eps
+    
+    df = (add_noise(f(batch_phi + eps_batch*e_i), snr, mu, device) - add_noise(f(batch_phi - eps_batch*e_i), snr, mu, device))
+    return df/(2*eps_batch[:,0])
 
-    df = (add_noise(f(batch_phi + eps*e_i), snr, mu, device) - add_noise(f(batch_phi - eps*e_i), snr, mu, device))
-    return df/(2*eps)
+# https://doi.org/10.1016/S0005-1098(96)00149-5
+def spall_gradient(df, phi, c=1e-1, snr=np.inf, mu=0, perturb_snr=100, perturb_mu=0, device=device, p_pick=0.5):
+#     print("c = {}".format(c))
+#     v = perturb_mu*torch.ones(phi.shape).to(device) + np.power(10, -1*perturb_snr/20)*(torch.randn(phi.shape).to(device))
+    v = torch.Tensor(2*np.random.binomial(1, p=p_pick, size=phi.shape) - 1).to(device)
+    f_n = add_noise(df(phi + c*v), snr, mu, device) - add_noise(df(phi), snr, mu, device)
+#     f_n = df(phi + c*v)
+#     print(phi[0, :10], v[0, :10], (c*v[0, :10]), f_n)
+#     print(v.shape)
+    return f_n/(c*v)
 
 def gradient(df, phi, i=None, approx=None, snr=np.inf, mu=0, c=1e-6, batch_size=64, device=device):
 
@@ -79,7 +96,7 @@ def gradient(df, phi, i=None, approx=None, snr=np.inf, mu=0, c=1e-6, batch_size=
     return grad
 
 
-def simulate(grad, f, GD, approx=1, mu_noise=0, snr=np.inf, is_BCD=False, delta=0.5, is_require_coords=False, batch_size=1, scheduler=True, ITR_LIM=10000, step=1, seed=None, load_phi=False, return_params=False, tau=2e2, phi=None, p=1, q=0.02, c=1e-1, N=N, isDNN=isDNN, opt_f=opt_f, eps=1e-2):
+def simulate(grad, f, GD, approx=1, mu_noise=0, snr=np.inf, is_BCD=False, delta=0.5, is_require_coords=False, batch_size=1, scheduler=True, ITR_LIM=10000, step=1, seed=None, load_phi=False, return_params=False, tau=2e2, phi=None, p=1, q=0.02, c=1e-1, N=N, isDNN=isDNN, opt_f=opt_f, eps=1e-2, MC=False, A_trans=None, pi=None, local_clock=False, spall_grad=False):
     if load_phi:
         phi = torch.Tensor(np.load('./data_files/phi_2.npy').reshape(1, -1)).to(device)
     elif phi is None:
@@ -89,7 +106,15 @@ def simulate(grad, f, GD, approx=1, mu_noise=0, snr=np.inf, is_BCD=False, delta=
     if isDNN:
         phi = init_weights(layers).to(device)
     opt = GD(snr=snr, approx=approx, mu_noise=mu_noise, device=device, batch_size=batch_size, seed=seed, c0=c, eps0=eps)
-
+    if MC:
+        print("MC is enabled!")
+        opt.MC = MC
+        opt.A = A_trans
+        opt.pi = pi
+        
+    opt.local_clk = local_clock
+    opt.spall_grad = spall_grad
+        
     print(opt.snr)
     if hasattr(opt, 'nesterov_sequence'):
         opt.nesterov_sequence = True
@@ -169,3 +194,23 @@ def plot_var_delta(values_gd_approx, values_gd_approx_noisy, deltas, title="", s
     if ylim is not None:
         plt.ylim(ylim)
     plt.savefig(savepath, bbox_inches='tight')
+
+    
+def get_single_path(idxs, pi, N=1):
+    return np.random.choice(idxs, size=N, p=pi)
+
+def generate_markov_path(pi, A, T, num_paths=1):
+    N = A.shape[0]
+    idxs = np.arange(N)
+    mc_paths = []
+    for i in range(num_paths):
+        init_idxs = get_single_path(idxs, pi)[0]
+        path = [init_idxs]
+        for i in range(T-1):
+            path.append(get_single_path(idxs, A[path[-1]])[0])
+        mc_paths.append(path)
+    return mc_paths
+
+def get_next_state(curr, A, idxs):
+    nex = [get_single_path(idxs, A[i])[0] for i in curr]
+    return np.unique(nex)
